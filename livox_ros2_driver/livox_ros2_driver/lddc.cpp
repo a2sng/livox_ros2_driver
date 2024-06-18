@@ -214,6 +214,15 @@ uint32_t Lddc::PublishPointcloud2(LidarDataQueue *queue, uint32_t packet_num,
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher =
       std::dynamic_pointer_cast<rclcpp::Publisher
       <sensor_msgs::msg::PointCloud2>>(GetCurrentPublisher(handle));
+      
+    // L3D ASG BEGIN
+      char name_str[48];
+      memset(name_str, 0, sizeof(name_str));
+      snprintf(name_str, sizeof(name_str), "%s",
+          lds_->lidars_[handle].info.broadcast_code);
+      cloud.header.frame_id.append("_").append(std::string(name_str).substr(10,4));
+    // L3D ASG END      
+
   if (kOutputToRos == output_type_) {
     publisher->publish(cloud);
   } else {
