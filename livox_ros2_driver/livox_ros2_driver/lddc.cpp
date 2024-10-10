@@ -135,6 +135,7 @@ void Lddc::InitPointcloud2MsgHeader(sensor_msgs::msg::PointCloud2& cloud) {
   cloud.point_step = sizeof(LivoxPointXyzrtl);
 }
 
+//ASG xyzrtl
 uint32_t Lddc::PublishPointcloud2(LidarDataQueue *queue, uint32_t packet_num,
                                   uint8_t handle) {
   uint64_t timestamp = 0;
@@ -154,7 +155,7 @@ uint32_t Lddc::PublishPointcloud2(LidarDataQueue *queue, uint32_t packet_num,
                     sizeof(LivoxPointXyzrtl));
   cloud.point_step = sizeof(LivoxPointXyzrtl);
 
-  uint8_t *point_base = cloud.data.data();
+  uint8_t point_buf[2048];
   uint8_t data_source = lidar->data_src;
   uint32_t line_num = GetLaserLineNumber(lidar->info.type);
   uint32_t echo_num = GetEchoNumPerPoint(lidar->raw_data_type);
@@ -182,11 +183,9 @@ uint32_t Lddc::PublishPointcloud2(LidarDataQueue *queue, uint32_t packet_num,
     uint32_t single_point_num = storage_packet.point_num * echo_num;
 
     if (kSourceLvxFile != data_source) {
-      PointConvertHandler pf_point_convert =
-          GetConvertHandler(lidar->raw_data_type);
+      PointConvertHandler pf_point_convert = GetConvertHandler(lidar->raw_data_type);
       if (pf_point_convert) {
-        point_base = pf_point_convert(point_base, raw_packet,
-            lidar->extrinsic_parameter, line_num);
+        pf_point_convert(point_buf, raw_packet, lidar->extrinsic_parameter, line_num);
       } else {
         /** Skip the packet */
         RCLCPP_INFO(cur_node_->get_logger(), "Lidar[%d] unkown packet type[%d]", handle,
@@ -194,8 +193,7 @@ uint32_t Lddc::PublishPointcloud2(LidarDataQueue *queue, uint32_t packet_num,
         break;
       }
     } else {
-      point_base = LivoxPointToPxyzrtl(point_base, raw_packet,
-          lidar->extrinsic_parameter, line_num);
+      LivoxPointToPxyzrtl(point_buf, raw_packet, lidar->extrinsic_parameter, line_num);
     }
 
     if (!is_zero_packet) {
@@ -213,9 +211,12 @@ uint32_t Lddc::PublishPointcloud2(LidarDataQueue *queue, uint32_t packet_num,
   cloud.data.resize(cloud.row_step); /** Adjust to the real size */
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher =
       std::dynamic_pointer_cast<rclcpp::Publisher
-      <sensor_msgs::msg::PointCloud2>>(GetCurrentPublisher(handle));
-      
+      <sensor_msgs::msg::PointCloud2>>(GetCurrentPublisher(handle));  
+
     // L3D ASG BEGIN
+  LivoxPointXyzrtl *dst_point = (LivoxPointXyzrtl *)point_buf;
+  FillPointsToPclXYZRTLMsg(cloud, dst_point, single_point_num);
+
       char name_str[48];
       memset(name_str, 0, sizeof(name_str));
       snprintf(name_str, sizeof(name_str), "%s",
@@ -239,6 +240,21 @@ uint32_t Lddc::PublishPointcloud2(LidarDataQueue *queue, uint32_t packet_num,
   return published_packet;
 }
 
+
+void Lddc::FillPointsToPclXYZRTLMsg(PointCloud& pcl_msg, \
+    LivoxPointXyzrtl* src_point, uint32_t num) {
+  LivoxPointXyzrtl* point_xyzrtl = (LivoxPointXyzrtl*)src_point;
+  for (uint32_t i = 0; i < num; i++) {     
+    if
+      (point_xyzrtl.intensity != 0.0)
+    {
+      pcl_msg.points.push_back(point_xyzrtl)
+    }
+    ++point_xyzrtl; 
+  }
+}
+
+
 void Lddc::FillPointsToPclMsg(PointCloud& pcl_msg, \
     LivoxPointXyzrtl* src_point, uint32_t num) {
   LivoxPointXyzrtl* point_xyzrtl = (LivoxPointXyzrtl*)src_point;
@@ -253,6 +269,7 @@ void Lddc::FillPointsToPclMsg(PointCloud& pcl_msg, \
   }
 }
 
+// ASG pxyzi 
 /* for pcl::pxyzi */
 uint32_t Lddc::PublishPointcloudData(LidarDataQueue *queue, uint32_t packet_num,
                                      uint8_t handle) {
@@ -298,8 +315,7 @@ uint32_t Lddc::PublishPointcloudData(LidarDataQueue *queue, uint32_t packet_num,
     uint32_t single_point_num = storage_packet.point_num * echo_num;
 
     if (kSourceLvxFile != data_source) {
-      PointConvertHandler pf_point_convert =
-          GetConvertHandler(lidar->raw_data_type);
+      PointConvertHandler pf_point_convert = GetConvertHandler(lidar->raw_data_type);
       if (pf_point_convert) {
         pf_point_convert(point_buf, raw_packet, lidar->extrinsic_parameter, \
             line_num);
@@ -545,7 +561,7 @@ void Lddc::PollingLidarPointCloudData(uint8_t handle, LidarDevice *lidar) {
     if (used_size < onetime_publish_packets) {
       break;
     }
-
+    // ASG xfer_format
     if (kPointCloud2Msg == transfer_format_) {
       PublishPointcloud2(p_queue, onetime_publish_packets, handle);
     } else if (kLivoxCustomMsg == transfer_format_) {
