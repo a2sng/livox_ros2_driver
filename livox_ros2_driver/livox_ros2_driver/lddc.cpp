@@ -228,16 +228,11 @@ namespace livox_ros
         cloud.data.resize(cloud.row_step); /** Adjust to the real size */
 
         removeEmptyPoints(cloud);
+        updateFrameIdWithId(cloud, handle); 
 
         rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher =
             std::dynamic_pointer_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>>(GetCurrentPublisher(handle));
 
-        // L3D ASG BEGIN
-        char name_str[48];
-        memset(name_str, 0, sizeof(name_str));
-        snprintf(name_str, sizeof(name_str), "%s", lds_->lidars_[handle].info.broadcast_code);
-        cloud.header.frame_id.append("_").append(std::string(name_str).substr(10, 4));
-        // L3D ASG END
 
         if (kOutputToRos == output_type_)
         {
@@ -258,6 +253,15 @@ namespace livox_ros
         }
         return published_packet;
     }
+
+    void Lddc::updateFrameIdWithId(sensor_msgs::msg::PointCloud2 &cloud, uint8_t handle)
+    {
+        char name_str[48];
+        memset(name_str, 0, sizeof(name_str));
+        snprintf(name_str, sizeof(name_str), "%s", lds_->lidars_[handle].info.broadcast_code);
+        cloud.header.frame_id.append("_").append(std::string(name_str).substr(10, 4));
+    }
+
 
     void Lddc::removeEmptyPoints(sensor_msgs::msg::PointCloud2 &cloud)
     {

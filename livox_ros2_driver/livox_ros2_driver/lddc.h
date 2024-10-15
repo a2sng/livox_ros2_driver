@@ -108,7 +108,7 @@ namespace livox_ros
 
         //ASG 
         void removeEmptyPoints(sensor_msgs::msg::PointCloud2 &cloud);
-
+        void updateFrameIdWithId(sensor_msgs::msg::PointCloud2 &cloud, uint8_t handle);
 
         uint8_t transfer_format_;
         uint8_t use_multi_topic_;
