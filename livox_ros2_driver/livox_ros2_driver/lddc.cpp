@@ -226,6 +226,9 @@ namespace livox_ros
         cloud.is_bigendian = false;
         cloud.is_dense     = true;
         cloud.data.resize(cloud.row_step); /** Adjust to the real size */
+
+        removeEmptyPoints(cloud);
+
         rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher =
             std::dynamic_pointer_cast<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>>(GetCurrentPublisher(handle));
 
@@ -255,6 +258,38 @@ namespace livox_ros
         }
         return published_packet;
     }
+
+    void Lddc::removeEmptyPoints(sensor_msgs::msg::PointCloud2 &cloud)
+    {
+        LivoxPointXyzrtl* lCurrentPoints = reinterpret_cast<LivoxPointXyzrtl*>(cloud.data.data()); 
+        std::vector<LivoxPointXyzrtl> lNonEmptyPoints;
+        lNonEmptyPoints.reserve(cloud.width); 
+        std::for_each(lCurrentPoints, lCurrentPoints+cloud.width, [&lNonEmptyPoints](LivoxPointXyzrtl const& pPoint)
+        {
+            if 
+                (pPoint.reflectivity > 0)
+            {
+                lNonEmptyPoints.push_back(pPoint); 
+            }
+        });
+
+        std::vector<uint8_t> lData; 
+        unsigned int lSize = sizeof(LivoxPointXyzrtl) * lNonEmptyPoints.size(); 
+        lData.resize(lSize); 
+        uint8_t* lPtr = reinterpret_cast<uint8_t*>(lNonEmptyPoints.data());
+        std::copy(lPtr, lPtr + lSize, lData.begin()); 
+        cloud.data = lData; 
+
+        // correct size
+        cloud.width = lSize; 
+        cloud.point_step = sizeof(LivoxPointXyzrtl);
+        cloud.row_step     = cloud.width * cloud.point_step;
+        cloud.is_bigendian = false;
+        cloud.is_dense     = true;
+        cloud.data.resize(cloud.row_step); /** Adjust to the real size */        
+        
+    }
+
 
     void Lddc::FillPointsToPclMsg(PointCloud &pcl_msg, LivoxPointXyzrtl *src_point, uint32_t num)
     {
