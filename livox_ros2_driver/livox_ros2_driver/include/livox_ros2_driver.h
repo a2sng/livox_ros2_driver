@@ -32,10 +32,9 @@
 #define GET_STRING(n) GET_STRING_DIRECT(n)
 #define GET_STRING_DIRECT(n) #n
 
-#define LIVOX_ROS_DRIVER_VERSION_STRING                      \
-  GET_STRING(LIVOX_ROS_DRIVER_VER_MAJOR)                     \
-  "." GET_STRING(LIVOX_ROS_DRIVER_VER_MINOR) "." GET_STRING( \
-      LIVOX_ROS_DRIVER_VER_PATCH)
+#define LIVOX_ROS_DRIVER_VERSION_STRING                                                                                \
+    GET_STRING(LIVOX_ROS_DRIVER_VER_MAJOR)                                                                             \
+    "." GET_STRING(LIVOX_ROS_DRIVER_VER_MINOR) "." GET_STRING(LIVOX_ROS_DRIVER_VER_PATCH)
 
 #include <future>
 #include <memory>
@@ -48,23 +47,22 @@
 namespace livox_ros
 {
 
-class LivoxDriver: public rclcpp::Node
-{
-public:
+    class LivoxDriver : public rclcpp::Node
+    {
+      public:
+        explicit LivoxDriver(const rclcpp::NodeOptions &options);
 
-  explicit LivoxDriver(const rclcpp::NodeOptions & options);
+        ~LivoxDriver();
 
-  ~LivoxDriver();
+      private:
+        void pollThread();
 
-private:
-  void pollThread();
+        std::unique_ptr<Lddc> lddc_ptr_;
+        std::shared_ptr<std::thread> poll_thread_;
+        std::shared_future<void> future_;
+        std::promise<void> exit_signal_;
+    };
 
-  std::unique_ptr<Lddc> lddc_ptr_;
-  std::shared_ptr<std::thread> poll_thread_;
-  std::shared_future<void> future_;
-  std::promise<void> exit_signal_;
-};
+} // namespace livox_ros
 
-}  // namespace livox_ros
-
-#endif  // LIVOX_ROS2_DRIVER_INClUDE_LIVOX_ROS2_DRIVER_H_
+#endif // LIVOX_ROS2_DRIVER_INClUDE_LIVOX_ROS2_DRIVER_H_

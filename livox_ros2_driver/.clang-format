@@ -1,0 +1,14 @@
+---
+BasedOnStyle: Microsoft
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: 'true'
+AlignOperands: 'true'
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: 'Yes'
+BreakBeforeBraces: Allman
+Cpp11BracedListStyle: 'false'
+Language: Cpp
+NamespaceIndentation: All
+DerivePointerAlignment: true
+
+...

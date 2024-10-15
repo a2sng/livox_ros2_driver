@@ -33,88 +33,93 @@
 #include "lds.h"
 #include "livox_sdk.h"
 
-namespace livox_ros {
+namespace livox_ros
+{
 
-/**
- * LiDAR data source, data from hub.
- */
-class LdsHub : public Lds {
- public:
-  static LdsHub *GetInstance(uint32_t interval_ms) {
-    static LdsHub lds_hub(interval_ms);
-    return &lds_hub;
-  }
+    /**
+     * LiDAR data source, data from hub.
+     */
+    class LdsHub : public Lds
+    {
+      public:
+        static LdsHub *GetInstance(uint32_t interval_ms)
+        {
+            static LdsHub lds_hub(interval_ms);
+            return &lds_hub;
+        }
 
-  int InitLdsHub(std::vector<std::string> &broadcast_code_strs,
-                 const char *user_config_path);
-  int DeInitLdsHub(void);
+        int InitLdsHub(std::vector<std::string> &broadcast_code_strs, const char *user_config_path);
+        int DeInitLdsHub(void);
 
- private:
-  LdsHub(uint32_t interval_ms);
-  LdsHub(const LdsHub &) = delete;
-  ~LdsHub();
-  LdsHub &operator=(const LdsHub &) = delete;
-  virtual void PrepareExit(void);
+      private:
+        LdsHub(uint32_t interval_ms);
+        LdsHub(const LdsHub &) = delete;
+        ~LdsHub();
+        LdsHub &operator=(const LdsHub &) = delete;
+        virtual void PrepareExit(void);
 
-  static void OnHubDataCb(uint8_t hub_handle, LivoxEthPacket *data,
-                          uint32_t data_num, void *client_data);
-  static void OnDeviceBroadcast(const BroadcastDeviceInfo *info);
-  static void OnDeviceChange(const DeviceInfo *info, DeviceEvent type);
-  static void StartSampleCb(livox_status status, uint8_t handle,
-                            uint8_t response, void *clent_data);
-  static void StopSampleCb(livox_status status, uint8_t handle,
-                           uint8_t response, void *clent_data);
-  static void HubQueryLidarInfoCb(livox_status status, uint8_t handle,
-                                  HubQueryLidarInformationResponse *response,
-                                  void *client_data);
-  static void ControlFanCb(livox_status status, uint8_t handle,
-                           uint8_t response, void *clent_data);
-  static void HubSetPointCloudReturnModeCb(
-      livox_status status, uint8_t handle,
-      HubSetPointCloudReturnModeResponse *response, void *clent_data);
-  static void SetCoordinateCb(livox_status status, uint8_t handle,
-                              uint8_t response, void *clent_data);
-  static void HubSetImuRatePushFrequencyCb(
-      livox_status status, uint8_t handle,
-      HubSetImuPushFrequencyResponse *response, void *clent_data);
-  static void HubErrorStatusCb(livox_status status, uint8_t handle,
-                               ErrorMessage *message);
-  static void ConfigPointCloudReturnMode(LdsHub *lds_hub);
-  static void ConfigImuPushFrequency(LdsHub *lds_hub);
-  static void ConfigLidarsOfHub(LdsHub *lds_hub);
+        static void OnHubDataCb(uint8_t hub_handle, LivoxEthPacket *data, uint32_t data_num, void *client_data);
+        static void OnDeviceBroadcast(const BroadcastDeviceInfo *info);
+        static void OnDeviceChange(const DeviceInfo *info, DeviceEvent type);
+        static void StartSampleCb(livox_status status, uint8_t handle, uint8_t response, void *clent_data);
+        static void StopSampleCb(livox_status status, uint8_t handle, uint8_t response, void *clent_data);
+        static void HubQueryLidarInfoCb(livox_status status, uint8_t handle, HubQueryLidarInformationResponse *response,
+                                        void *client_data);
+        static void ControlFanCb(livox_status status, uint8_t handle, uint8_t response, void *clent_data);
+        static void HubSetPointCloudReturnModeCb(livox_status status, uint8_t handle,
+                                                 HubSetPointCloudReturnModeResponse *response, void *clent_data);
+        static void SetCoordinateCb(livox_status status, uint8_t handle, uint8_t response, void *clent_data);
+        static void HubSetImuRatePushFrequencyCb(livox_status status, uint8_t handle,
+                                                 HubSetImuPushFrequencyResponse *response, void *clent_data);
+        static void HubErrorStatusCb(livox_status status, uint8_t handle, ErrorMessage *message);
+        static void ConfigPointCloudReturnMode(LdsHub *lds_hub);
+        static void ConfigImuPushFrequency(LdsHub *lds_hub);
+        static void ConfigLidarsOfHub(LdsHub *lds_hub);
 
-  void ResetLdsHub(void);
-  void StateReset(void);
-  int AddBroadcastCodeToWhitelist(const char *broadcast_code);
-  bool IsBroadcastCodeExistInWhitelist(const char *broadcast_code);
-  void UpdateHubLidarinfo(void);
+        void ResetLdsHub(void);
+        void StateReset(void);
+        int AddBroadcastCodeToWhitelist(const char *broadcast_code);
+        bool IsBroadcastCodeExistInWhitelist(const char *broadcast_code);
+        void UpdateHubLidarinfo(void);
 
-  void EnableAutoConnectMode(void) { auto_connect_mode_ = true; }
-  void DisableAutoConnectMode(void) { auto_connect_mode_ = false; }
-  bool IsAutoConnectMode(void) { return auto_connect_mode_; }
-  int ParseConfigFile(const char *pathname);
-  int AddRawUserConfig(UserRawConfig &config);
-  bool IsExistInRawConfig(const char *broadcast_code);
-  int GetRawConfig(const char *broadcast_code, UserRawConfig &config);
-  bool IsAllLidarSetBitsClear() {
-    for (int i = 0; i < kMaxLidarCount; i++) {
-      if (lidars_[i].config.set_bits) {
-        return false;
-      }
-    }
-    return true;
-  }
+        void EnableAutoConnectMode(void)
+        {
+            auto_connect_mode_ = true;
+        }
+        void DisableAutoConnectMode(void)
+        {
+            auto_connect_mode_ = false;
+        }
+        bool IsAutoConnectMode(void)
+        {
+            return auto_connect_mode_;
+        }
+        int ParseConfigFile(const char *pathname);
+        int AddRawUserConfig(UserRawConfig &config);
+        bool IsExistInRawConfig(const char *broadcast_code);
+        int GetRawConfig(const char *broadcast_code, UserRawConfig &config);
+        bool IsAllLidarSetBitsClear()
+        {
+            for (int i = 0; i < kMaxLidarCount; i++)
+            {
+                if (lidars_[i].config.set_bits)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
-  bool auto_connect_mode_;
-  uint32_t whitelist_count_;
-  volatile bool is_initialized_;
-  char broadcast_code_whitelist_[kMaxLidarCount][kBroadcastCodeSize];
+        bool auto_connect_mode_;
+        uint32_t whitelist_count_;
+        volatile bool is_initialized_;
+        char broadcast_code_whitelist_[kMaxLidarCount][kBroadcastCodeSize];
 
-  LidarDevice hub_;
+        LidarDevice hub_;
 
-  std::vector<UserRawConfig> lidar_raw_config_;
-  UserRawConfig hub_raw_config_;
-};
+        std::vector<UserRawConfig> lidar_raw_config_;
+        UserRawConfig hub_raw_config_;
+    };
 
-}  // namespace livox_ros
+} // namespace livox_ros
 #endif
