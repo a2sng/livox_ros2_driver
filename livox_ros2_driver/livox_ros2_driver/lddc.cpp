@@ -271,7 +271,7 @@ namespace livox_ros
         std::for_each(lCurrentPoints, lCurrentPoints+cloud.width, [&lNonEmptyPoints](LivoxPointXyzrtl const& pPoint)
         {
             if 
-                (pPoint.reflectivity > 0)
+                (pPoint.x > 0.0f)
             {
                 lNonEmptyPoints.push_back(pPoint); 
             }
