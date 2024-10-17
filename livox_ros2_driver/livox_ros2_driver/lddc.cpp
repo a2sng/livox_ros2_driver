@@ -285,7 +285,7 @@ namespace livox_ros
         cloud.data = lData; 
 
         // correct size
-        cloud.width = lSize; 
+        cloud.width = lNonEmptyPoints.size(); 
         cloud.point_step = sizeof(LivoxPointXyzrtl);
         cloud.row_step     = cloud.width * cloud.point_step;
         cloud.is_bigendian = false;
