@@ -1,6 +1,6 @@
 # Copyright(c) 2020 livoxtech limited.
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.9)
 project(livox_ros2_driver)
 
 # Default to C99
